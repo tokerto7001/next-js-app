@@ -2,8 +2,11 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Header from '../components/Header'
 import Navbar from '../components/Navbar'
+import Results from '../components/Results'
+import requests from '../utils/requests'
 
-export default function Home() {
+export default function Home(props) { // this props object is coming from the getServerSideProps function
+  // console.log('server', props); // it logs to both server and client consoles. It consoles to server side only when its first fetch after refreshing the page
   return (
     <div>
       <Head>
@@ -18,6 +21,20 @@ export default function Home() {
     {/* Navbar Component */}
     <Navbar />
     {/* Results Component */}
+    <Results results={props.results}/>
     </div>
   )
+}
+
+export async function getServerSideProps(context){ // this is the server side part and this is rendered first
+  const genre = context.query.genre; // context is the object coming from the server and we get the search params
+
+  const request = await fetch(`https://api.themoviedb.org/3${requests[genre]?.url || requests.fetchTrending.url}`)
+  .then((res) => res.json())
+  .catch(err => console.log(err));
+  return {
+    props : {
+      results : request.results
+    }
+  }
 }
